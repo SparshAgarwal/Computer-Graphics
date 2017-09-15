@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="3000" height="1500" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+ctx.font = "30px Arial";
+ctx.fillText(" Sparsh Agarwal (SA)",180,340);
+ctx.font = "15px Arial";
+ctx.fillText(" Used Bezier curves and arcs",225,370);
+ctx.fillText(" Notice the overlaping of curves in S in top, middle and bottom",130,390);
+ctx.lineCap="round";
+ctx.lineWidth = 9;
+ctx.strokeStyle = '#e50000';
+ctx.translate(80,-180);
+ctx.beginPath();
+ctx.moveTo(190, 360);
+ctx.bezierCurveTo(100, 330, 250, 240, 330, 330);
+ctx.moveTo(300, 360);
+ctx.bezierCurveTo(390, 390, 240, 480, 160, 390);
+ctx.stroke();
+ctx.lineWidth = 11;
+ctx.strokeStyle = '#000000';
+ctx.translate(-80,180);
+ctx.beginPath();
+ctx.arc(0, 400*.8, 500*.8, -0.20 * Math.PI, -0.05 * Math.PI);
+ctx.stroke();
+ctx.beginPath();
+ctx.arc(810*.8, 400*.8, 500*.8, 1.05 *Math.PI, 1.2 * Math.PI );
+ctx.stroke();
+ctx.translate(80,-180);
+ctx.lineWidth = 9;
+ctx.beginPath();
+ctx.moveTo(190,360);
+ctx.bezierCurveTo(230,370,260,350,300,360);
+ctx.strokeStyle = '#e50000';
+ctx.stroke();
+</script> 
+
+</body>
+</html>
