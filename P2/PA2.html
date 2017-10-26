@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<script>
+function setup() { "use strict";
+    var canvas = document.getElementById('canvas');
+    var x = 0;
+    var flag = 0;
+    var y = 0;
+    
+    function draw() {
+      var ctx = canvas.getContext('2d');
+      var la = new Image();
+      var ra = new Image();
+      var ll = new Image();
+      var rl = new Image();
+      var b = new Image();
+      var ball = new Image();
+      if (x+2 == 500){
+            flag = 1;
+       }
+      if (x-2 == 0){
+            flag = 0;
+       }
+       if(flag == 1){
+          x = (x - 2)%500;
+       }
+       else{
+          x = (x + 2)%500;
+       }
+       y = Math.sqrt(10000-((0.4*x-100)*(0.4*x-100)));
+      var ra_a = (500-x)*0.00120*Math.PI;
+      var la_a = -x*0.00080*Math.PI;
+      la.src = "img/ra.png";
+      ra.src = "img/ra.png";
+      ll.src = "img/ll.png";
+      rl.src = "img/rl.png";
+      b.src = "img/b.png";
+      ball.src = "img/ball.png";
+
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(x,200);
+      ctx.drawImage(b, 50, 75);
+      ctx.drawImage(ll, 20, 280);
+      ctx.drawImage(rl, 210, 270);
+      ctx.save();
+      ctx.translate(280, 170);
+      ctx.rotate(ra_a);
+      ctx.drawImage(ra, -50, -100);
+      ctx.restore();
+      ctx.save();
+      ctx.translate(60, 200);
+      ctx.rotate(la_a);
+      ctx.drawImage(la, -60, -100);
+      ctx.restore();
+      ctx.save();
+      ctx.drawImage(ball, 0.40*x, 50-y);
+      ctx.restore();
+      ctx.restore();
+      window.requestAnimationFrame(draw);  
+    }
+    draw();   
+}
+window.onload = setup;
+</script>
+<body>
+    <canvas id="canvas" width="5000" height="1000"></canvas>
+</body>
+</html>
