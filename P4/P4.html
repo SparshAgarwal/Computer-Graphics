@@ -184,8 +184,8 @@ function setup() {
         drawDiamond(view,                                                   m4.translation([.5,.5,.5]), r,g,0*b, 5);
         drawDiamond(view, m4.multiply(m4.multiply(ctr1,m4.rotationY(theta)), m4.translation([1,.5,1]) ), 72,72,72, 2);
         drawDiamond(view, m4.multiply(m4.multiply(ctr2,m4.rotationY(-theta*1.3)), m4.translation([1,.5,1]) ), 255,165,0, 0);
-        drawDiamond(view, m4.multiply(m4.multiply(ctr3,m4.rotationY(theta*1.2)), m4.translation([1,.5,1]) ), 0,128,255, 0);
-        drawStar(view, m4.multiply(m4.multiply(ctr4,m4.rotationY(theta*10)), m4.translation([6,4,6]) ), 255,255,255, 0);
+        drawDiamond(view, m4.multiply(ctr3,m4.rotationY(theta*1.2), m4.translation([1,.5,1]) ), 0,128,255, 0);
+        drawStar(view, m4.multiply(ctr4,m4.rotationY(theta*10), m4.translation([6,4,6]) ), 255,255,255, 0);
         drawStar(view, m4.multiply(m4.multiply(ctr4,m4.rotationY(theta*10)), m4.translation([-2,5,4]) ), 255,255,255, 0);
         drawStar(view, m4.multiply(m4.multiply(ctr4,m4.rotationY(theta*10)), m4.translation([6,-4,3]) ), 255,255,255, 0);
         drawStar(view, m4.multiply(m4.multiply(ctr4,m4.rotationY(theta*10)), m4.translation([7,-2,-6]) ), 255,255,255, 0);
@@ -193,14 +193,14 @@ function setup() {
         drawStar(view, m4.multiply(m4.multiply(ctr4,m4.rotationY(theta*10)), m4.translation([4,5,-3]) ), 255,255,255, 0);
         drawStar(view, m4.multiply(m4.multiply(ctr4,m4.rotationY(theta*10)), m4.translation([-3,-5,4]) ), 255,255,255, 0);
 
-        theta += +mySliders.speed.value / 50;
+        theta += mySliders.speed.value / 50;
 
         if (cb.checked) {
             painter.wireframe();
         } else {
             painter.render(ns.checked);
         }
-        window.requestAnimationFrame(draw);;
+        window.requestAnimationFrame(draw);
 
     }
 
@@ -210,7 +210,7 @@ function setup() {
         mySliders[s[0]] = sl;
     });
 
-    window.requestAnimationFrame(draw);;
+    window.requestAnimationFrame(draw);
 }
 window.onload = setup;
 

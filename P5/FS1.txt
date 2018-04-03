@@ -1,0 +1,51 @@
+precision highp float;
+uniform float time;
+varying vec3 fPosition;
+varying vec3 Position;
+varying vec3 fNormal;
+const vec3 lightCol1   = vec3(.3,0.5,.7);
+const vec3 lightCol2   = vec3(.7,0.5,.3);
+
+vec3 color() {
+  float yl = Position.y*5.0 - floor(Position.y*5.0);
+  float xl = Position.x*5.0 - floor(Position.x*5.0);
+  vec3 color = vec3(0.0, 0.0, 0.5);
+  if( abs(mod( abs(Position.x+2.0), abs(.2 * tan(time * 10.0) )   )) < 0.1){
+    color.x = smoothstep((cos(time * 50.0) * 1.0),0.55,xl);
+    }
+  else{
+    color.x = smoothstep((cos(time * 50.0) * 1.0),0.55,xl);
+    }
+  if( abs(mod(Position.y+2.0, .2 * sin(time * 10.0 + 1.0))) < .1){
+    color.y = smoothstep((sin(time * 50.0) * tan(time * 20.0)),0.95,yl);
+    }
+  else{
+    color.y = smoothstep((sin(time * 50.0) * tan(time * 20.0)),0.95,yl);
+    }
+  return color;
+}
+
+vec2 blinnPhongDir(vec3 lightDir, float lightInt, float Ka, float Kd, float Ks, float shininess)
+{
+  vec3 s = normalize(lightDir);
+  vec3 v = normalize(-fPosition);
+  vec3 n = normalize(fNormal);
+  vec3 h = normalize(v+s);
+  float diffuse = Ka + Kd * lightInt * max(0.0, dot(n, s));
+  float spec =  Ks * pow(max(0.0, dot(n,h)), shininess);
+  return vec2(diffuse, spec);
+}
+
+void main()
+{
+  float angle      = 25.0*time;
+  vec3 lightV1     = vec3(0.0,cos(angle),sin(angle));
+  vec3 lightV2     = vec3(sin(angle),-0.5,cos(angle));
+  float specularC1 = 0.7; 
+  float specularC2 = 0.7; 
+
+  vec3 ColorL1 = blinnPhongDir(lightV1,0.0,0.0,0.0,specularC1,64.0).y*lightCol1;
+  vec3 ColorL2 = blinnPhongDir(lightV2,0.0,0.0,0.0,specularC2,16.0).y*lightCol2;
+  vec3 ColorAD = blinnPhongDir(lightV2,1.0,0.7,.1,0.0,1.0).x*color();
+  gl_FragColor = vec4(ColorAD+ColorL1+ColorL2,1.0);
+}

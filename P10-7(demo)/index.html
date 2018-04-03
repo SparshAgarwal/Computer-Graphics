@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Graphics town framework code by Mike Gleicher
+  -- written October, 2015
+  -->
+<head>
+    <meta charset="UTF-8">
+    <title>GraphicsTown JS 2015!</title>
+</head>
+<body>
+<!-- load this stuff first -->
+<script src="Libraries/twgl-full.js"></script>
+<script src="Libraries/panel.js"></script>
+<script src="Libraries/arcball.js"></script>
+<script src="grobject.js"></script>
+<script src="ExampleObjects/ground.js"></script>
+
+<!-- This is where we load the objects for the world -->
+<!-- <script src="ExampleObjects/simplest.js"></script> -->
+<!-- <script src="ExampleObjects/texturedplane.js"></script> -->
+<script src="ExampleObjects/cube.js"></script>
+<script src="ExampleObjects/house.js"></script>
+<script src="ExampleObjects/road.js"></script>
+<script src="ExampleObjects/kindOfBall.js"></script>
+<script src="ExampleObjects/bikesandseats.js"></script>
+
+<!-- I am adding the helicopter -->
+<script src="Helicopter/helicopter.js"></script>
+
+<!-- This gets loaded LAST (actually, it probably doesn't have to) -->
+<script src="graphicstown.js"></script>
+</body>
+
+<!-- all of the shaders get stuck here in the HTML because
+  -- that's the only way I know to load them without either
+  -- sticking them in JavaScript strings, or using a web server
+  -->
+
+
+
+<script id="cube-vs" type="notjs">
+// specialized shader for the simple cube
+// we assume that the model matrix works as the normal
+//      matrix - this only is try if the model matrix
+//      it a rotate/translate
+//      (uniform scale is OK since we re-normalize)
+// color is solid
+// simple lighting
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+    attribute vec3 vcolor;
+    varying vec3 fPosition;
+    varying vec3 fColor;
+    varying vec3 fNormal;
+    uniform float time;
+    uniform mat4 view;
+    uniform mat4 proj;
+    uniform mat4 model;
+    uniform vec3 lightdir;
+    uniform vec3 cubecolor;
+
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0);
+        fPosition = (view * model * vec4(vpos, 1.0)).xyz;
+        fColor = cubecolor;
+        fNormal = (model * vec4(vnormal, 0.0)).xyz;
+    }
+</script>
+<script id="cube-fs" type="notjs">
+// simple shader that does vertex coloring
+//  (e.g. the vertex shader figures the lighting
+// note this is used for more than just the cube
+    precision highp float;
+    uniform float time;
+    uniform vec3 lightdir;
+    varying vec3 fPosition;
+    varying vec3 fNormal;
+    varying vec3 fColor;
+    const vec3 lightCol1   = vec3(1.0,1.0,1.0);
+    const vec3 lightCol2   = vec3(0.0,0.0,1.0);
+
+    vec2 blinnPhongDir(vec3 lightDir, float lightInt, float Ka, float Kd, float Ks, float shininess)
+    {
+        vec3 s = normalize(lightDir);
+        vec3 v = normalize(-fPosition);
+        vec3 n = normalize(fNormal);
+        vec3 h = normalize(v+s);
+        float diffuse = Ka + Kd * lightInt * max(0.0, dot(n, s));
+        float spec =  Ks * pow(max(0.0, dot(n,h)), shininess);
+        return vec2(diffuse, spec);
+    }
+
+    void main(void) {
+        float angle      = 25.0*time;
+        // vec3 lightV1     = vec3(2.0*cos(angle),5.0,2.0*sin(angle));
+        // vec3 lightV2     = vec3(2.0*cos(-angle),-5.0,2.0*sin(-angle));
+        // vec3 lightV3     = vec3(0.0,5.0*cos(angle),5.0*sin(angle));
+        // vec3 lightV4     = vec3(0.0,5.0*cos(-angle),5.0*sin(-angle));
+        float specularC1 = 0.7; 
+        float specularC2 = 0.7; 
+
+        vec3 ColorL1 = blinnPhongDir(lightdir,0.0,0.0,0.0,specularC1,64.0).y*lightCol1;
+        // vec3 ColorL2 = blinnPhongDir(lightV2,0.0,0.0,0.0,specularC2,16.0).y*lightCol2;
+        // vec3 ColorT = blinnPhongDir(lightV3,0.7,0.3,0.7,0.0,0.0).x*fColor;
+        vec3 ColorB = blinnPhongDir(lightdir,0.7,0.3,0.7,0.0,0.0).x*fColor;
+        gl_FragColor = vec4(ColorL1+ColorB,1.0);
+    }
+</script>
+
+
+<script id="helicopter-vs" type="notjs">
+// specialized shader for the simple helicopter
+// we assume that the model matrix works as the normal
+//      matrix - this only is try if the model matrix
+//      it a rotate/translate
+//      (uniform scale is OK since we re-normalize)
+// color is solid
+// simple lighting
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+    attribute vec3 vcolor;
+    varying vec3 fPosition;
+    varying vec3 fColor;
+    varying vec3 fNormal;
+    uniform float time;
+    uniform mat4 view;
+    uniform mat4 proj;
+    uniform mat4 model;
+    uniform vec3 lightdir;
+    uniform vec3 cubecolor;
+
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0);
+        fPosition = (view * model * vec4(vpos, 1.0)).xyz;
+        fColor = cubecolor;
+        fNormal = (model * vec4(vnormal, 0.0)).xyz;
+    }
+</script>
+
+
+<script id="helicopter-fs" type="notjs">
+// simple shader that does vertex coloring
+//  (e.g. the vertex shader figures the lighting
+// note this is used for more than just the helicopter
+    precision highp float;
+    uniform float time;
+    uniform vec3 lightdir;
+    varying vec3 fPosition;
+    varying vec3 fNormal;
+    varying vec3 fColor;
+    const vec3 lightCol1   = vec3(1.0,1.0,1.0);
+    const vec3 lightCol2   = vec3(0.0,0.0,1.0);
+
+    vec2 blinnPhongDir(vec3 lightDir, float lightInt, float Ka, float Kd, float Ks, float shininess)
+    {
+        vec3 s = normalize(lightDir);
+        vec3 v = normalize(-fPosition);
+        vec3 n = normalize(fNormal);
+        vec3 h = normalize(v+s);
+        float Kaf;
+        float Kdf;
+        float Ksf;
+        if (dot(s,vec3(0,1,0))<0.0){
+            console.log(dot(s,vec3(0,-1,0)))
+            Kaf=0.0;
+            Kdf=0.0;
+            Ksf=0.0;
+        }
+        else{
+            Ksf = Ks*dot(s,vec3(0,1,0));
+            Kaf = Ka*dot(s,vec3(0,1,0));
+            Kdf = Kd*dot(s,vec3(0,1,0));
+        }
+        float diffuse = Kaf + Kdf * lightInt * max(0.0, dot(n, s));
+        float spec =  Ksf * pow(max(0.0, dot(n,h)), shininess);
+        return vec2(diffuse, spec);
+    }
+
+    void main(void) {
+        float angle      = 25.0*time;
+        // vec3 lightV1     = vec3(2.0*cos(angle),5.0,2.0*sin(angle));
+        // vec3 lightV2     = vec3(2.0*cos(-angle),-5.0,2.0*sin(-angle));
+        // vec3 lightV3     = vec3(0.0,5.0*cos(angle),5.0*sin(angle));
+        // vec3 lightV4     = vec3(0.0,5.0*cos(-angle),5.0*sin(-angle));
+        float specularC1 = 0.7; 
+        float specularC2 = 0.7; 
+
+        vec3 ColorL1 = blinnPhongDir(lightdir,0.0,0.0,0.0,specularC1,64.0).y*lightCol1;
+        // vec3 ColorL2 = blinnPhongDir(lightV2,0.0,0.0,0.0,specularC2,16.0).y*lightCol2;
+        // vec3 ColorT = blinnPhongDir(lightV3,0.7,0.3,0.7,0.0,0.0).x*fColor;
+        vec3 ColorB = blinnPhongDir(lightdir,0.7,0.3,0.7,0.0,0.0).x*fColor;
+        gl_FragColor = vec4(ColorL1+ColorB,1.0);
+    }
+</script>
+
+<!-- Special Ground Plane Shader - makes a boring
+  -- checkerboard
+  -->
+<script id="ground-vs" type="not-js">
+    precision highp float;
+
+    attribute vec3 vpos;
+    varying vec3 outPos;
+
+    uniform mat4 view;
+    uniform mat4 proj;
+
+    void main(void) {
+        gl_Position = proj * view * vec4(vpos, 1.0);
+        outPos = vpos;
+    }
+</script>
+<script id="ground-fs" type="notjs">
+    // note this is used for more than just the cube
+    precision highp float;
+    varying vec3 outPos;
+    void main(void) {
+        float xs = step(1.0,mod(outPos.x,2.0));
+        float zs = step(1.0,mod(outPos.z,2.0));
+        float ss = (xs>.5) ? zs : 1.0-zs;
+        gl_FragColor = mix(vec4(0.0,0.5,0.0,1),
+                           vec4(0.0,0.5,0.0,1),
+                           ss
+                           );
+
+    }
+</script>
+
+</html>

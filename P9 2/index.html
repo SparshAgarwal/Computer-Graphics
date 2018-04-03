@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<!-- <body onload="init()"> -->
+<body >
+<script src="Libraries/twgl-full.js"></script>
+<script src="Libraries/panel.js"></script>
+<script src="Libraries/arcball.js"></script>
+<script src="Libraries/gl-matrix-min.js"></script>
+<script src="Libraries/simple-rotator.js"></script>
+<script src="Libraries/basic-objects-IFS.js"></script>
+<script src="grobject.js"></script>
+<script src="graphicstown.js"></script>
+<script src="Objects/skybox/skybox.js"></script>
+<script src="Objects/bean/bean.js"></script>
+<script src="Objects/ground.js"></script>
+<script src="Objects/cube.js"></script>
+<script src="Objects/house/house.js"></script>
+<script src="Objects/road.js"></script>
+<script src="Objects/kindOfBall.js"></script>
+<script src="Objects/bikesandseats.js"></script>
+<script src="Objects/helicopter.js"></script>
+
+
+
+
+</body>
+
+<script type="x-shader/x-vertex" id="vshader">
+     uniform mat4 projection;
+     uniform mat4 modelview;
+     attribute vec3 coords;
+     varying vec3 vCoords;
+     void main() {
+        vec4 eyeCoords = modelview * vec4(coords,1.0);
+        gl_Position = projection * eyeCoords;
+        vCoords = coords;//gl_Position.xyz;
+     }
+</script>
+<script type="x-shader/x-fragment" id="fshader">
+     precision mediump float;
+     varying vec3 vCoords;
+     uniform samplerCube skybox;
+     void main() {
+          gl_FragColor = textureCube(skybox, vCoords);
+          //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+     }
+</script>
+
+
+<script id="cube-vs" type="notjs">
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+    attribute vec3 vcolor;
+    varying vec3 fPosition;
+    varying vec3 fColor;
+    varying vec3 fNormal;
+    uniform float time;
+    uniform mat4 view;
+    uniform mat4 proj;
+    uniform mat4 model;
+    uniform vec3 lightdir;
+    uniform vec3 cubecolor;
+
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0);
+        fPosition = (view * model * vec4(vpos, 1.0)).xyz;
+        fColor = cubecolor;
+        fNormal = (model * vec4(vnormal, 0.0)).xyz;
+    }
+</script>
+<script id="cube-fs" type="notjs">
+    precision highp float;
+    uniform float time;
+    uniform vec3 lightdir;
+    varying vec3 fPosition;
+    varying vec3 fNormal;
+    varying vec3 fColor;
+    const vec3 lightCol1   = vec3(1.0,1.0,1.0);
+    const vec3 lightCol2   = vec3(0.0,0.0,1.0);
+
+    vec2 blinnPhongDir(vec3 lightDir, float lightInt, float Ka, float Kd, float Ks, float shininess)
+    {
+        vec3 s = normalize(lightDir);
+        vec3 v = normalize(-fPosition);
+        vec3 n = normalize(fNormal);
+        vec3 h = normalize(v+s);
+        float diffuse = Ka + Kd * lightInt * max(0.0, dot(n, s));
+        float spec =  Ks * pow(max(0.0, dot(n,h)), shininess);
+        return vec2(diffuse, spec);
+    }
+
+    void main(void) {
+        float angle      = 25.0*time;
+                                        float specularC1 = 0.7; 
+        float specularC2 = 0.7; 
+
+        vec3 ColorL1 = blinnPhongDir(lightdir,0.0,0.0,0.0,specularC1,64.0).y*lightCol1;
+                        vec3 ColorB = blinnPhongDir(lightdir,0.7,0.3,0.7,0.0,0.0).x*fColor;
+        gl_FragColor = vec4(ColorL1+ColorB,1.0);
+    }
+</script>
+
+
+
+
+<script id="helicopter-vs" type="notjs">
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+    attribute vec3 vcolor;
+    varying vec3 fPosition;
+    varying vec3 fColor;
+    varying vec3 fNormal;
+    uniform float time;
+    uniform mat4 view;
+    uniform mat4 proj;
+    uniform mat4 model;
+    uniform vec3 lightdir;
+    uniform vec3 cubecolor;
+
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0);
+        fPosition = (view * model * vec4(vpos, 1.0)).xyz;
+        fColor = cubecolor;
+        fNormal = (model * vec4(vnormal, 0.0)).xyz;
+    }
+</script>
+
+
+<script id="helicopter-fs" type="notjs">
+    precision highp float;
+    uniform float time;
+    uniform vec3 lightdir;
+    varying vec3 fPosition;
+    varying vec3 fNormal;
+    varying vec3 fColor;
+    const vec3 lightCol1   = vec3(1.0,1.0,1.0);
+    const vec3 lightCol2   = vec3(0.0,0.0,1.0);
+
+    vec2 blinnPhongDir(vec3 lightDir, float lightInt, float Ka, float Kd, float Ks, float shininess)
+    {
+        vec3 s = normalize(lightDir);
+        vec3 v = normalize(-fPosition);
+        vec3 n = normalize(fNormal);
+        vec3 h = normalize(v+s);
+        float Kaf;
+        float Kdf;
+        float Ksf;
+        if (dot(s,vec3(0,1,0))<0.0){
+            // console.log(dot(s,vec3(0,-1,0)))
+            Kaf=0.0;
+            Kdf=0.0;
+            Ksf=0.0;
+        }
+        else{
+            Ksf = Ks*dot(s,vec3(0,1,0));
+            Kaf = Ka*dot(s,vec3(0,1,0));
+            Kdf = Kd*dot(s,vec3(0,1,0));
+        }
+        float diffuse = Kaf + Kdf * lightInt * max(0.0, dot(n, s));
+        float spec =  Ksf * pow(max(0.0, dot(n,h)), shininess);
+        return vec2(diffuse, spec);
+    }
+
+    void main(void) {
+        float angle      = 25.0*time;
+                                        float specularC1 = 0.7; 
+        float specularC2 = 0.7; 
+
+        vec3 ColorL1 = blinnPhongDir(lightdir,0.0,0.0,0.0,specularC1,64.0).y*lightCol1;
+                        vec3 ColorB = blinnPhongDir(lightdir,0.7,0.3,0.7,0.0,0.0).x*fColor;
+        gl_FragColor = vec4(ColorL1+ColorB,1.0);
+    }
+</script>
+
+<script id="ground-vs" type="not-js">
+    precision highp float;
+
+    attribute vec3 vpos;
+    varying vec3 outPos;
+
+    uniform mat4 view;
+    uniform mat4 proj;
+
+    void main(void) {
+        gl_Position = proj * view * vec4(vpos, 1.0);
+        outPos = vpos;
+    }
+</script>
+<script id="ground-fs" type="notjs">
+        precision highp float;
+    varying vec3 outPos;
+    void main(void) {
+        float xs = step(1.0,mod(outPos.x,2.0));
+        float zs = step(1.0,mod(outPos.z,2.0));
+        float ss = (xs>.5) ? zs : 1.0-zs;
+        gl_FragColor = mix(vec4(0.0,0.5,0.0,1),
+                           vec4(0.0,0.5,0.0,1),
+                           ss
+                           );
+
+    }
+</script>
+
+
+
+</html>

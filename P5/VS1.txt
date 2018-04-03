@@ -1,0 +1,39 @@
+precision highp float;
+attribute vec3 position;
+attribute vec3 normal;
+uniform mat3 normalMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform float time;
+varying vec3 fNormal;
+varying vec3 fPosition;
+varying vec3 Position;
+varying vec3 modelT;
+varying vec3 modelN;
+const float pi=3.14159;
+
+vec2 Rotate(vec2 vec_in, float angle)
+{
+  vec2 vec_out;
+  vec_out.x=cos(angle)*vec_in.x-sin(angle)*vec_in.y;
+  vec_out.y=sin(angle)*vec_in.x+cos(angle)*vec_in.y;
+  return vec_out;
+}
+
+void main()
+{
+  modelT=position;
+  modelN=normal;  
+  Position = position;
+  
+  modelT.xz = Rotate(modelT.xz,0.5*pi*modelT.y*sin(10.0*time)); 
+  modelT.x = modelT.x*(1.1+cos(time*5.0)); 
+  modelT.y = modelT.y*(1.1+sin(time*5.0));
+  modelN.xz = Rotate(modelN.xz,0.5*pi*modelT.y*sin(10.0*time));
+  
+  fNormal = normalize(normalMatrix * modelN);
+  vec4 pos = modelViewMatrix * vec4(modelT, 1.0);
+  fPosition = pos.xyz;
+  gl_Position = projectionMatrix * pos;
+  
+}
